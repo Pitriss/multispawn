@@ -447,10 +447,12 @@ minetest.register_chatcommand("spawnremove", {
 			minetest.chat_send_player(name, "Spawn point "..param.." was succesfuly removed.");
 			spawns[param] = nil
 			spawn_id = rebuild_id(spawns, spawn_id)
+			save_data(config, spawns, default_spawn.id)
 		elseif type(spawns[spawn_id[tonumber(param)]]) == "table" then
 			minetest.chat_send_player(name, "Spawn point "..spawn_id[param].." was succesfuly removed.");
 			spawns[spawn_id[tonumber(param)]] = nil
 			spawn_id = rebuild_id(spawns, spawn_id)
+			save_data(config, spawns, default_spawn.id)
 		else
 			minetest.chat_send_player(name, "I don't know such spawn point. Sorry.");
 			return
