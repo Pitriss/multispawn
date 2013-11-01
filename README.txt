@@ -13,6 +13,9 @@ Commands:
 /spawnset
 Create spawn
 
+/spawnremove <spawnid|spawnnum>
+Remove spawn
+
 /spawnedit <spawnid|spawnnum>
 Edit spawn
 

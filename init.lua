@@ -1,34 +1,135 @@
-local config_file = minetest.get_worldpath().."/spawn.conf"
+miltispawndebug = true
 
---if conf doesn't exist, create it
+local function save_data(sett, data, def_sp)
+
+	if sett ~= nil then
+		data_ser = minetest.serialize(data)
+		sett:set("data", data_ser)
+		sett:set("default", def_sp)
+		sett:write()
+	else
+		minetest.chat_send_all("Saving data failed")
+	end
+
+end
+
+local function build_id(sp)
+	--build of index
+	local si = {}
+	for _,v in pairs(sp) do
+		si[v.num] = v.id
+	end
+	return si
+end
+
+local function rebuild_id(sp, si)
+	--clearing of index
+	for v in pairs (si) do
+			si[v] = nil
+	end
+	--rebuild of index
+	for _,v in pairs(sp) do
+		si[v.num] = v.id
+	end
+	return si
+end
+
+local function load_data(sett, field)
+	local loaded = sett:get("data")
+	local def = sett:get("default")
+-- 	print("DEBUG: "..loaded.." : "..def)
+	if loaded ~= nil then
+		local data = minetest.deserialize(loaded)
+		local def = sett:get("default")
+	else
+		local data = {
+			origin = {num = 0, coords = {x = 0, y = 8.5, z = 0}, name = "Origin", id = "origin"},
+		}
+		local def = "origin"
+	end
+-- 	table.foreach(data, print)
+	local return_table = {}
+
+	table.insert(return_table, {spawns=data, default=def})
+	return return_table
+end
+
+local function print_r(tab,com)
+	if miltispawndebug == true then
+		print("DEBUG: "..com)
+		table.foreach(tab, print)
+		print("-----")
+		return true
+	else
+		return false
+	end
+end
+
+local function debug(var, com)
+	if miltispawndebug == true then
+		print("DEBUG: "..com)
+		print(var)
+		minetest.chat_send_all("DEBUG: "..var.."// "..com)
+		print("-----")
+		return true
+	else
+		return false
+	end
+end
+
+local config_file = minetest.get_worldpath().."/spawn.conf"
+--in case of not existant config file, it
+--will create it
 local file_desc = io.open(config_file, "a")
 file_desc:close()
 
---Create config instance
+--create config instance
 local config = Settings(config_file)
+local data
+local default
+local spawns = {}
+local default_spawn = {}
 
-local temp_data = minetest.deserialize(config:get("data"))
-if temp_data ~= nil then
-	local spawns = temp_data
-	local temp_data = config:get("default")
-	if temp_data ~= nil  then
-		default_spawn = spawns[temp.data]
-	else
-		print("Default spawn point was not set. Respawning might not work!!")
+data = config:get("data")
+if data ~= nil then
+	spawns = minetest.deserialize(data)
+	default = config:get("default")
+	if default ~= nil then
+		default_spawn = spawns[default]
 	end
 else
-	print("Spawn point configuration is not set. Please set atleast one spawnpoint.")
+	spawns = {
+		origin = {num = 0, coords = {x = 0, y = 0, z = 0}, name = "Origin", id = "origin"},
+	}
+	default_spawn = spawns.origin
 end
+
+
+print_r(spawns,"load check")
+print_r(default_spawn,"load check")
+debug(default_spawn.id,"load check")
+
+save_data(config, spawns, default_spawn.id)
+spawn_id = build_id(spawns)
+
+
+-- default_spawn = spawns[loaded_data["default"]]
+print_r(spawns,"after id build")
+print_r(default_spawn,"after id build")
+
+
+
+-- local default_spawn = spawns.origin
 
 minetest.register_privilege("spawn_admin", {"Allowing to create, modify and delete spawnpoints", give_to_singleplayer = false})
 
 -- Make list of spawns by its numbers
-if spawns ~= nil then
-	local spawn_id = {}
-	for _,v in pairs(spawns) do
-		spawn_id[v.num] = v.id
-	end
+local spawn_id = {}
+for _,v in pairs(spawns) do
+	spawn_id[v.num] = v.id
 end
+
+
 
 minetest.register_chatcommand("spawn", {
 	param = "",
@@ -39,22 +140,8 @@ minetest.register_chatcommand("spawn", {
 			return
 		end
 		if param == "" then
-			local player_coords = player:getpos()
-			local minnumber = nil
-			local spawn
-			for _,v in pairs(spawns) do
-				temp_coords = v.coords
-				distance = tonumber(vector.distance(temp_coords, player_coords))
-				if minnumber == nil then
-					minnumber = tonumber(distance)
-					spawn = v.name
-				elseif distance < minnumber then
-					minnumber = tonumber(distance)
-					spawn = v.name
-				end
-			end
-			player:setpos(spawns[spawn].coords)
-			minetest.chat_send_player(name, "You are now at "..spawns[spawn].name);
+			player:setpos(default_spawn.coords)
+			minetest.chat_send_player(name, "You are now at "..default_spawn.name);
 		elseif type(spawns[param]) == "table" then
 			player:setpos(spawns[param].coords)
 			minetest.chat_send_player(name, "You are now at "..spawns[param].name);
@@ -94,8 +181,7 @@ minetest.register_chatcommand("spawnset", {
 		minetest.show_formspec(name, "multispawn:spawnset", formspec)
 
 		minetest.register_on_player_receive_fields(function(player, formname, fields)
-			print("something received "..formname)
-			minetest.chat_send_all( "Sent.."..formname);
+			debug("something received "..formname,"Spawnset section")
 			if formname == "multispawn:spawnset" then
 				local x, y, z, sname, sid, snum, err
 				err = ""
@@ -136,28 +222,26 @@ minetest.register_chatcommand("spawnset", {
 					minetest.show_formspec(name, "multispawn:spawnset", formspec)
 
 				end
-				spawns[sid].name = sname
-				spawns[sid].num = snum
+				local joined_data = {}
 				local new_coords = {}
-				new_coords.x = tostring(x)
-				new_coords.y = tostring(y)
-				new_coords.z = tostring(z)
-				spawns[sid].coords = new_coords
-				if config ~= nil then
-					data_ser = minetest.serialize(spawns)
-					config:set("data", data_ser)
-					config:set("default", default_spawn.id)
-					config:write()
-				end
+				joined_data.name = sname
+				joined_data.num = snum
+				joined_data.id = sid
+-- 				new_coords.x = tostring(x) or 0
+-- 				new_coords.y = tostring(y) or 0
+-- 				new_coords.z = tostring(z) or 0
+				new_coords = {x=tostring(x), y=tostring(y), z=tostring(z)}
+				joined_data.coords = new_coords
+-- 				table.insert(spawns[joined_data.id], joined_data)
+				spawns[sid] = {}
+				spawns[sid] = joined_data
+				save_data(config, spawns, default_spawn.id)
+				print_r(spawns,"spawn creation")
+				print_r(spawn_id,"spawn creation")
 
-				--clearing of index
-				for v in pairs (spawn_id) do
-					 spawn_id[v] = nil
-				end
-				--rebuild of index
-				for _,v in pairs(spawns) do
-					spawn_id[v.num] = v.id
-				end
+				spawn_id = rebuild_id(spawns, spawn_id)
+
+				print_r(spawn_id,"spawn creation after id rebuild")
 				return true
 			end
 		end)
@@ -203,14 +287,14 @@ minetest.register_chatcommand("spawnedit", {
 		formspec = formspec.."field[2.2,3;1,1;scoordz;Z coord;"..tonumber(editedspawn.coords.z).."]"
 		formspec = formspec.."label[0,8;]"
 		formspec = formspec.."button_exit[0,5;8,1;ssubmit;Confirm changes]"
+
 		minetest.show_formspec(name, "multispawn:spawnedit", formspec)
 
 
 		minetest.register_on_player_receive_fields(function(player, formname, fields)
-			print("something received "..formname)
-			minetest.chat_send_all( "Sent.."..formname);
+			debug("something received "..formname,"Spawnedit section")
 			if formname == "multispawn:spawnedit" then
-				local x, y, z, sname, sid, snum, err
+				local x, y, z, sname, snum, err
 				err = ""
 				x = tonumber(fields.scoordx) or 0
 				y = tonumber(fields.scoordy) or 0
@@ -229,6 +313,7 @@ minetest.register_chatcommand("spawnedit", {
 					end
 				end
 
+-- 				table.foreach(spawns[sid], print)
 				if err ~= "" then
 					minetest.chat_send_player(name, err);
 					local formspec = "size[8,6]"
@@ -242,28 +327,28 @@ minetest.register_chatcommand("spawnedit", {
 					formspec = formspec.."button_exit[0,5;8,1;ssubmit;Confirm changes]"
 					minetest.show_formspec(name, "multispawn:spawnedit", formspec)
 				end
-				spawns[tempspawn].name = sname
-				spawns[tempspawn].num = snum
-				local new_coords = {}
-				new_coords.x = tostring(x)
-				new_coords.y = tostring(y)
-				new_coords.z = tostring(z)
-				spawns[tempspawn].coords = new_coords
-				if config ~= nil then
-					data_ser = minetest.serialize(spawns)
-					config:set("data", data_ser)
-					config:set("default", default_spawn.id)
-					config:write()
-				end
 
-				--clearing of index
-				for v in pairs (spawn_id) do
-					 spawn_id[v] = nil
-				end
-				--rebuild of index
-				for _,v in pairs(spawns) do
-					spawn_id[v.num] = v.id
-				end
+				local joined_data = {}
+				local new_coords = {}
+				joined_data.name = sname
+				joined_data.num = snum
+				joined_data.id = tempspawn
+				new_coords = {x=tostring(x), y=tostring(y), z=tostring(z)}
+				print_r(new_coords,"spawnedit new coords")
+				joined_data.coords = new_coords
+				debug(tempspawn,"spawnedit")
+				print_r(spawns[tempspawn],"spawnedit")
+				spawns[tempspawn] = joined_data
+				save_data(config, spawns, default_spawn.id)
+
+				print_r(spawn_id,"edit spawnid after save")
+
+				spawn_id = rebuild_id(spawns, spawn_id)
+
+				print_r(spawn_id,"edit spawnid after id rebuild")
+				print_r(spawns[tempspawn],"edit after reb")
+				print_r(spawns[tempspawn].coords,"edit after reb")
+				print_r(spawns,"edit")
 				return true
 			end
 		end)
@@ -338,31 +423,50 @@ minetest.register_chatcommand("defaultspawn", {
 			minetest.chat_send_player(name, "I don't know such spawn point. Sorry.");
 			return
 		end
-		if config ~= nil then
-			data_ser = minetest.serialize(spawns)
-			config:set("data", data_ser)
-			config:set("default", default_spawn.id)
-			config:write()
+	end
+})
+
+minetest.register_chatcommand("spawnremove", {
+	param = "",
+	description = "Allows to remove spawn.",
+	func = function(name, param)
+		local player = minetest.get_player_by_name(name)
+		if not player then
+			return
+		end
+		if not minetest.check_player_privs(name, {spawn_admin}) then
+			minetest.chat_send_player(name, "Hey "..name..", you are not allowed to use that command. Privs needed: spawn_admin");
+			return
+		end
+		debug(param,"remove param")
+		-- Handling parameter
+		if param == "" then
+			minetest.chat_send_player(name, "You must provide spawnid or spawn number");
+			return
+		elseif type(spawns[param]) == "table" then
+			minetest.chat_send_player(name, "Spawn point "..param.." was succesfuly removed.");
+			spawns[param] = nil
+			spawn_id = rebuild_id(spawns, spawn_id)
+		elseif type(spawns[spawn_id[tonumber(param)]]) == "table" then
+			minetest.chat_send_player(name, "Spawn point "..spawn_id[param].." was succesfuly removed.");
+			spawns[spawn_id[tonumber(param)]] = nil
+			spawn_id = rebuild_id(spawns, spawn_id)
+		else
+			minetest.chat_send_player(name, "I don't know such spawn point. Sorry.");
+			return
 		end
 	end
 })
 
 
 minetest.register_on_newplayer(function(player)
-	if default_spawn ~= nil then
-		player:setpos(default_spawn.coords)
-		return true
-	else
-		return
-	end
+    player:setpos(default_spawn.coords)
+    return true
 end)
 
+
 minetest.register_on_respawnplayer(function(player, pos)
-	if default_spawn ~= nil then
-		player:setpos(default_spawn.coords)
-		return true
-	else
-		return
-	end
+    player:setpos(default_spawn.coords)
+    return true
 end)
 
