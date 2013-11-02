@@ -19,7 +19,7 @@ Remove spawn
 /spawnedit <spawnid|spawnnum>
 Edit spawn
 
-/defaultspawn <spawnid|spawnnum>
+/spawndefault <spawnid|spawnnum>
 Set this spawn as default (New players and respawned dead players will be spawned here)
 
 /spawnnear

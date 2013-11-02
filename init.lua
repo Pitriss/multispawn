@@ -1,4 +1,4 @@
-miltispawndebug = true
+miltispawndebug = false
 
 local function save_data(sett, data, def_sp)
 
@@ -37,7 +37,6 @@ end
 local function load_data(sett, field)
 	local loaded = sett:get("data")
 	local def = sett:get("default")
--- 	print("DEBUG: "..loaded.." : "..def)
 	if loaded ~= nil then
 		local data = minetest.deserialize(loaded)
 		local def = sett:get("default")
@@ -104,22 +103,8 @@ else
 	default_spawn = spawns.origin
 end
 
-
-print_r(spawns,"load check")
-print_r(default_spawn,"load check")
-debug(default_spawn.id,"load check")
-
 save_data(config, spawns, default_spawn.id)
 spawn_id = build_id(spawns)
-
-
--- default_spawn = spawns[loaded_data["default"]]
-print_r(spawns,"after id build")
-print_r(default_spawn,"after id build")
-
-
-
--- local default_spawn = spawns.origin
 
 minetest.register_privilege("spawn_admin", {"Allowing to create, modify and delete spawnpoints", give_to_singleplayer = false})
 
@@ -128,8 +113,6 @@ local spawn_id = {}
 for _,v in pairs(spawns) do
 	spawn_id[v.num] = v.id
 end
-
-
 
 minetest.register_chatcommand("spawn", {
 	param = "",
@@ -181,7 +164,6 @@ minetest.register_chatcommand("spawnset", {
 		minetest.show_formspec(name, "multispawn:spawnset", formspec)
 
 		minetest.register_on_player_receive_fields(function(player, formname, fields)
-			debug("something received "..formname,"Spawnset section")
 			if formname == "multispawn:spawnset" then
 				local x, y, z, sname, sid, snum, err
 				err = ""
@@ -236,12 +218,9 @@ minetest.register_chatcommand("spawnset", {
 				spawns[sid] = {}
 				spawns[sid] = joined_data
 				save_data(config, spawns, default_spawn.id)
-				print_r(spawns,"spawn creation")
-				print_r(spawn_id,"spawn creation")
 
 				spawn_id = rebuild_id(spawns, spawn_id)
 
-				print_r(spawn_id,"spawn creation after id rebuild")
 				return true
 			end
 		end)
@@ -292,7 +271,6 @@ minetest.register_chatcommand("spawnedit", {
 
 
 		minetest.register_on_player_receive_fields(function(player, formname, fields)
-			debug("something received "..formname,"Spawnedit section")
 			if formname == "multispawn:spawnedit" then
 				local x, y, z, sname, snum, err
 				err = ""
@@ -334,21 +312,10 @@ minetest.register_chatcommand("spawnedit", {
 				joined_data.num = snum
 				joined_data.id = tempspawn
 				new_coords = {x=tostring(x), y=tostring(y), z=tostring(z)}
-				print_r(new_coords,"spawnedit new coords")
 				joined_data.coords = new_coords
-				debug(tempspawn,"spawnedit")
-				print_r(spawns[tempspawn],"spawnedit")
 				spawns[tempspawn] = joined_data
 				save_data(config, spawns, default_spawn.id)
-
-				print_r(spawn_id,"edit spawnid after save")
-
 				spawn_id = rebuild_id(spawns, spawn_id)
-
-				print_r(spawn_id,"edit spawnid after id rebuild")
-				print_r(spawns[tempspawn],"edit after reb")
-				print_r(spawns[tempspawn].coords,"edit after reb")
-				print_r(spawns,"edit")
 				return true
 			end
 		end)
@@ -397,7 +364,7 @@ minetest.register_chatcommand("spawnnear", {
 	end
 })
 
-minetest.register_chatcommand("defaultspawn", {
+minetest.register_chatcommand("spawndefault", {
 	param = "",
 	description = "Allows change of default spawn.",
 	func = function(name, param)
@@ -416,9 +383,11 @@ minetest.register_chatcommand("defaultspawn", {
 		elseif type(spawns[param]) == "table" then
 			default_spawn = spawns[param]
 			minetest.chat_send_player(name, "Default spawn point was set to "..default_spawn.name..".");
+			save_data(config, spawns, default_spawn.id)
 		elseif type(spawns[spawn_id[tonumber(param)]]) == "table" then
 			default_spawn = spawns[spawn_id[tonumber(param)]]
 			minetest.chat_send_player(name, "Default spawn point was set to "..default_spawn.name..".");
+			save_data(config, spawns, default_spawn.id)
 		else
 			minetest.chat_send_player(name, "I don't know such spawn point. Sorry.");
 			return
@@ -438,7 +407,7 @@ minetest.register_chatcommand("spawnremove", {
 			minetest.chat_send_player(name, "Hey "..name..", you are not allowed to use that command. Privs needed: spawn_admin");
 			return
 		end
-		debug(param,"remove param")
+
 		-- Handling parameter
 		if param == "" then
 			minetest.chat_send_player(name, "You must provide spawnid or spawn number");
@@ -447,11 +416,28 @@ minetest.register_chatcommand("spawnremove", {
 			minetest.chat_send_player(name, "Spawn point "..param.." was succesfuly removed.");
 			spawns[param] = nil
 			spawn_id = rebuild_id(spawns, spawn_id)
+			if param == default_spawn.id then
+				local v
+				for v in pairs (spawns) do
+					default_spawn = spawns[v]
+					break
+				end
+				minetest.chat_send_player(name, "You removed default spawn point! Default spawn point was set to "..default_spawn.name..".");
+			end
 			save_data(config, spawns, default_spawn.id)
 		elseif type(spawns[spawn_id[tonumber(param)]]) == "table" then
-			minetest.chat_send_player(name, "Spawn point "..spawn_id[param].." was succesfuly removed.");
-			spawns[spawn_id[tonumber(param)]] = nil
+			param = spawn_id[tonumber(param)]
+			minetest.chat_send_player(name, "Spawn point "..spawns[param].name.." was succesfuly removed.");
+			spawns[param] = nil
 			spawn_id = rebuild_id(spawns, spawn_id)
+			if param == default_spawn.id then
+				local v
+				for v in pairs (spawns) do
+					default_spawn = spawns[v]
+					break
+				end
+				minetest.chat_send_player(name, "You removed default spawn point! Default spawn point was set to "..default_spawn.name..".");
+			end
 			save_data(config, spawns, default_spawn.id)
 		else
 			minetest.chat_send_player(name, "I don't know such spawn point. Sorry.");
