@@ -218,7 +218,7 @@ minetest.register_chatcommand("spawnset", {
 				spawns[sid] = {}
 				spawns[sid] = joined_data
 				save_data(config, spawns, default_spawn.id)
-
+				minetest.chat_send_player(name, "Spawn point "..joined_data.name.." was succesfully created.");
 				spawn_id = rebuild_id(spawns, spawn_id)
 
 				return true
@@ -316,6 +316,7 @@ minetest.register_chatcommand("spawnedit", {
 				spawns[tempspawn] = joined_data
 				save_data(config, spawns, default_spawn.id)
 				spawn_id = rebuild_id(spawns, spawn_id)
+				minetest.chat_send_player(name, "Spawn point "..joined_data.name.." was succesfully edited.");
 				return true
 			end
 		end)
