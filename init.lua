@@ -123,8 +123,23 @@ minetest.register_chatcommand("spawn", {
 			return
 		end
 		if param == "" then
-			player:setpos(default_spawn.coords)
-			minetest.chat_send_player(name, "You are now at "..default_spawn.name);
+			local player_coords = player:getpos()
+			local minnumber = nil
+			local spawn = ""
+			local temp_coords = nil
+			for _,v in pairs(spawns) do
+				temp_coords = v.coords
+				distance = tonumber(vector.distance(temp_coords, player_coords))
+				if minnumber == nil then
+					minnumber = tonumber(distance)
+					spawn = v.id
+				elseif distance < minnumber then
+					minnumber = tonumber(distance)
+					spawn = v.id
+				end
+			end
+			player:setpos(spawns[spawn].coords)
+			minetest.chat_send_player(name, "You are now at "..spawns[spawn].name);
 		elseif type(spawns[param]) == "table" then
 			player:setpos(spawns[param].coords)
 			minetest.chat_send_player(name, "You are now at "..spawns[param].name);
