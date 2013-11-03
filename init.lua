@@ -53,6 +53,25 @@ local function load_data(sett, field)
 	return return_table
 end
 
+local function get_nearest_id (playerref, spawnlist)
+	local player_coords = playerref:getpos()
+	local minnumber = nil
+	local spawn = ""
+	local temp_coords = nil
+	for _,v in pairs(spawnlist) do
+		temp_coords = v.coords
+		distance = tonumber(vector.distance(temp_coords, player_coords))
+		if minnumber == nil then
+			minnumber = tonumber(distance)
+			spawn = v.id
+		elseif distance < minnumber then
+			minnumber = tonumber(distance)
+			spawn = v.id
+		end
+	end
+	return spawn
+end
+
 local function print_r(tab,com)
 	if miltispawndebug == true then
 		print("DEBUG: "..com)
@@ -123,23 +142,9 @@ minetest.register_chatcommand("spawn", {
 			return
 		end
 		if param == "" then
-			local player_coords = player:getpos()
-			local minnumber = nil
-			local spawn = ""
-			local temp_coords = nil
-			for _,v in pairs(spawns) do
-				temp_coords = v.coords
-				distance = tonumber(vector.distance(temp_coords, player_coords))
-				if minnumber == nil then
-					minnumber = tonumber(distance)
-					spawn = v.id
-				elseif distance < minnumber then
-					minnumber = tonumber(distance)
-					spawn = v.id
-				end
-			end
-			player:setpos(spawns[spawn].coords)
-			minetest.chat_send_player(name, "You are now at "..spawns[spawn].name);
+			local nearestid = get_nearest_id(player, spawns)
+			player:setpos(spawns[nearestid].coords)
+			minetest.chat_send_player(name, "You are now at "..spawns[nearestid].name);
 		elseif type(spawns[param]) == "table" then
 			player:setpos(spawns[param].coords)
 			minetest.chat_send_player(name, "You are now at "..spawns[param].name);
@@ -362,21 +367,8 @@ minetest.register_chatcommand("spawnnear", {
 		if not player then
 			return
 		end
-		local player_coords = player:getpos()
-		local minnumber = nil
-		local spawn
-		for _,v in pairs(spawns) do
-			temp_coords = v.coords
-			distance = tonumber(vector.distance(temp_coords, player_coords))
-			if minnumber == nil then
-				minnumber = tonumber(distance)
-				spawn = v.name
-			elseif distance < minnumber then
-				minnumber = tonumber(distance)
-				spawn = v.name
-			end
-		end
-		minetest.chat_send_player(name, "Nearest spawn is "..spawn..".");
+		local nearestid = get_nearest_id(player, spawns)
+		minetest.chat_send_player(name, "Nearest spawn is "..spawns[nearestid].name..".");
 	end
 })
 
