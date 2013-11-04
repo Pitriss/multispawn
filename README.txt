@@ -1,5 +1,3 @@
-multispawn mod
-
 multispawn mod for minetest
 
 This mod allows to define many named spawns through ingame formspec gui. To be allowed
@@ -31,7 +29,23 @@ Spawns you to nearest/specified spawn
 /spawnlist
 list all available spawns
 
+Credits:
+Thanks to fairiestoy and Ritchie for suggestions, advices and testing.
 
 Licence: WTFPL
 
-This version is not finished yet. It is working, but default values are not implemented yet, so is needed to set some spawn first.
+Full licence text:
+
+        DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+                    Version 2, December 2004
+
+ Copyright (C) 2004 Sam Hocevar <sam@hocevar.net>
+
+ Everyone is permitted to copy and distribute verbatim or modified
+ copies of this license document, and changing it is allowed as long
+ as the name is changed.
+
+            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+   TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+
+  0. You just DO WHAT THE FUCK YOU WANT TO.
