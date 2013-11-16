@@ -135,7 +135,7 @@ end
 
 minetest.register_chatcommand("spawn", {
 	param = "",
-	description = "Spawns player to default or specified spawn",
+	description = "Spawns player to nearest or specified spawn",
 	func = function(name, param)
 		local player = minetest.get_player_by_name(name)
 		if not player then
