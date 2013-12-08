@@ -135,7 +135,7 @@ end
 
 minetest.register_chatcommand("spawn", {
 	param = "",
-	description = "Spawns player to nearest or specified spawn",
+	description = "Spawns player to default or specified spawn",
 	func = function(name, param)
 		local player = minetest.get_player_by_name(name)
 		if not player then
@@ -184,7 +184,7 @@ minetest.register_chatcommand("spawnset", {
 		minetest.show_formspec(name, "multispawn:spawnset", formspec)
 
 		minetest.register_on_player_receive_fields(function(player, formname, fields)
-			if formname == "multispawn:spawnset" then
+			if formname == "multispawn:spawnset" and fields.quit ~= "true" then
 				local x, y, z, sname, sid, snum, err
 				err = ""
 				x = tonumber(fields.scoordx) or 0
@@ -199,8 +199,6 @@ minetest.register_chatcommand("spawnset", {
 				end
 				if err == "" then
 					for _,v in pairs(spawns) do
--- 					table.foreach(v, print)
--- 					print("-------")
 						if v.num == snum then
 							err = "This spawn number already exists"
 							break
@@ -229,12 +227,8 @@ minetest.register_chatcommand("spawnset", {
 				joined_data.name = sname
 				joined_data.num = snum
 				joined_data.id = sid
--- 				new_coords.x = tostring(x) or 0
--- 				new_coords.y = tostring(y) or 0
--- 				new_coords.z = tostring(z) or 0
 				new_coords = {x=tostring(x), y=tostring(y), z=tostring(z)}
 				joined_data.coords = new_coords
--- 				table.insert(spawns[joined_data.id], joined_data)
 				spawns[sid] = {}
 				spawns[sid] = joined_data
 				save_data(config, spawns, default_spawn.id)
@@ -242,6 +236,9 @@ minetest.register_chatcommand("spawnset", {
 				spawn_id = rebuild_id(spawns, spawn_id)
 
 				return true
+			else
+				-- esc or enter pressed
+				return false
 			end
 		end)
 	end,
@@ -291,7 +288,7 @@ minetest.register_chatcommand("spawnedit", {
 
 
 		minetest.register_on_player_receive_fields(function(player, formname, fields)
-			if formname == "multispawn:spawnedit" then
+			if formname == "multispawn:spawnedit" and fields.quit ~= "true" then
 				local x, y, z, sname, snum, err
 				err = ""
 				x = tonumber(fields.scoordx) or 0
@@ -302,8 +299,6 @@ minetest.register_chatcommand("spawnedit", {
 
 				if err == "" then
 					for _,v in pairs(spawns) do
--- 					table.foreach(v, print)
--- 					print("-------")
 						if v.num == snum and tempspawn ~= spawn_id[snum] then
 							err = "This spawn number already used by "..spawn_id[snum]
 							break
@@ -338,6 +333,9 @@ minetest.register_chatcommand("spawnedit", {
 				spawn_id = rebuild_id(spawns, spawn_id)
 				minetest.chat_send_player(name, "Spawn point "..joined_data.name.." was succesfully edited.");
 				return true
+			else
+				-- esc or enter pressed
+				return false
 			end
 		end)
 	end,
