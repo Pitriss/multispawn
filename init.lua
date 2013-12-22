@@ -359,14 +359,26 @@ minetest.register_chatcommand("spawnlist", {
 
 minetest.register_chatcommand("spawnnear", {
 	param = "",
-	description = "Show you name and distance of nearest spawn",
+	description = "Show you name and distance of your or <nicknames> nearest spawn",
 	func = function(name, param)
-		local player = minetest.get_player_by_name(name)
-		if not player then
-			return
+		if param == "" then
+			local player = minetest.get_player_by_name(name)
+			if not player then
+				return
+			end
+			local nearestid = get_nearest_id(player, spawns)
+			minetest.chat_send_player(name, "Nearest spawn is "..spawns[nearestid].name..".");
+		else
+			local sparam = tostring(param)
+			local player = minetest.get_player_by_name(sparam)
+			if not player then
+				minetest.chat_send_player(name, sparam.." is not online.");
+				return
+			end
+			local nearestid = get_nearest_id(player, spawns)
+			print(sparam)
+			minetest.chat_send_player(name, sparam.."'s nearest spawn is "..spawns[nearestid].name..".");
 		end
-		local nearestid = get_nearest_id(player, spawns)
-		minetest.chat_send_player(name, "Nearest spawn is "..spawns[nearestid].name..".");
 	end
 })
 
