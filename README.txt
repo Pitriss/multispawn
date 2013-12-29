@@ -4,7 +4,7 @@ This mod allows to define many named spawns through ingame formspec gui. To be a
 to manage spawns, you need spawn_admin privs. This mod save its settings into world directory,
 to the file spawn.conf
 
-This mod needs latest git version of minetest.
+This mod needs 0.4.8 or some latest git versions of 0.4.7
 
 Commands:
 
@@ -20,10 +20,10 @@ Edit spawn
 /spawndefault <spawnid|spawnnum>
 Set this spawn as default (New players and respawned dead players will be spawned here)
 
-/spawnnear
-Write name of nearest spawn
+/spawnnear (playername)
+Write name of (yours or playernames) nearest spawn
 
-/spawn [spawnname|psawnid]
+/spawn [spawnname|spawnid]
 Spawns you to nearest/specified spawn
 
 /spawnlist
