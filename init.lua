@@ -160,17 +160,13 @@ minetest.register_chatcommand("spawn", {
 
 minetest.register_chatcommand("spawnset", {
 	param = "",
+	privs = {spawn_admin=true},
 	description = "Set new spawn point.",
 	func = function(name, param)
 		local player = minetest.get_player_by_name(name)
 		if not player then
 			return
 		end
-		if not minetest.check_player_privs(name, {spawn_admin}) then
-			minetest.chat_send_player(name, "Hey "..name..", you are not allowed to use that command. Privs needed: spawn_admin");
-			return
-		end
-
 		local formspec = "size[8,6]"
 		formspec = formspec.."label[0,0;New spawn setting]"
 		formspec = formspec.."field[0.2,1;7,1;sname;Spawn name;]"
@@ -246,14 +242,11 @@ minetest.register_chatcommand("spawnset", {
 
 minetest.register_chatcommand("spawnedit", {
 	param = "",
+	privs = {spawn_admin=true},
 	description = "Edit spawn point.",
 	func = function(name, param)
 		local player = minetest.get_player_by_name(name)
 		if not player then
-			return
-		end
-		if not minetest.check_player_privs(name, {spawn_admin}) then
-			minetest.chat_send_player(name, "Hey "..name..", you are not allowed to use that command. Privs needed: spawn_admin");
 			return
 		end
 		local editedspawn = {}
@@ -273,7 +266,6 @@ minetest.register_chatcommand("spawnedit", {
 			return
 		end
 
-
 		local formspec = "size[8,6]"
 		formspec = formspec.."label[0,0;Spawn editing]"
 		formspec = formspec.."field[0.2,1;7,1;sname;Spawn name;"..tostring(editedspawn.name).."]"
@@ -285,7 +277,6 @@ minetest.register_chatcommand("spawnedit", {
 		formspec = formspec.."button_exit[0,5;8,1;ssubmit;Confirm changes]"
 
 		minetest.show_formspec(name, "multispawn:spawnedit", formspec)
-
 
 		minetest.register_on_player_receive_fields(function(player, formname, fields)
 			if formname == "multispawn:spawnedit" and fields.quit ~= "true" then
@@ -384,14 +375,11 @@ minetest.register_chatcommand("spawnnear", {
 
 minetest.register_chatcommand("spawndefault", {
 	param = "",
+	privs = {spawn_admin=true},
 	description = "Allows change of default spawn.",
 	func = function(name, param)
 		local player = minetest.get_player_by_name(name)
 		if not player then
-			return
-		end
-		if not minetest.check_player_privs(name, {spawn_admin}) then
-			minetest.chat_send_player(name, "Hey "..name..", you are not allowed to use that command. Privs needed: spawn_admin");
 			return
 		end
 		-- Handling parameter
@@ -415,14 +403,11 @@ minetest.register_chatcommand("spawndefault", {
 
 minetest.register_chatcommand("spawnremove", {
 	param = "",
+	privs = {spawn_admin=true},
 	description = "Allows to remove spawn.",
 	func = function(name, param)
 		local player = minetest.get_player_by_name(name)
 		if not player then
-			return
-		end
-		if not minetest.check_player_privs(name, {spawn_admin}) then
-			minetest.chat_send_player(name, "Hey "..name..", you are not allowed to use that command. Privs needed: spawn_admin");
 			return
 		end
 
