@@ -134,8 +134,8 @@ for _,v in pairs(spawns) do
 end
 
 minetest.register_chatcommand("spawn", {
-	param = "",
-	description = "Spawns player to default or specified spawn",
+	params = "[spawn number|spawnid]",
+	description = "Spawns player to nearest or specified spawn",
 	func = function(name, param)
 		local player = minetest.get_player_by_name(name)
 		if not player then
@@ -159,7 +159,7 @@ minetest.register_chatcommand("spawn", {
 
 
 minetest.register_chatcommand("spawnset", {
-	param = "",
+	params = "",
 	privs = {spawn_admin=true},
 	description = "Set new spawn point.",
 	func = function(name, param)
@@ -241,7 +241,7 @@ minetest.register_chatcommand("spawnset", {
 })
 
 minetest.register_chatcommand("spawnedit", {
-	param = "",
+	params = "<spawn number|spawnid>",
 	privs = {spawn_admin=true},
 	description = "Edit spawn point.",
 	func = function(name, param)
@@ -333,7 +333,7 @@ minetest.register_chatcommand("spawnedit", {
 })
 
 minetest.register_chatcommand("spawnlist", {
-	param = "",
+	params = "",
 	description = "List all possible spawnpoints.",
 	func = function(name, param)
 		local player = minetest.get_player_by_name(name)
@@ -349,8 +349,8 @@ minetest.register_chatcommand("spawnlist", {
 })
 
 minetest.register_chatcommand("spawnnear", {
-	param = "",
-	description = "Show you name and distance of your or <nicknames> nearest spawn",
+	params = "[name]",
+	description = "Show you name and distance of your or <names> nearest spawn",
 	func = function(name, param)
 		if param == "" then
 			local player = minetest.get_player_by_name(name)
@@ -374,7 +374,7 @@ minetest.register_chatcommand("spawnnear", {
 })
 
 minetest.register_chatcommand("spawndefault", {
-	param = "",
+	params = "<spawn number|spawnid>",
 	privs = {spawn_admin=true},
 	description = "Allows change of default spawn.",
 	func = function(name, param)
@@ -402,7 +402,7 @@ minetest.register_chatcommand("spawndefault", {
 })
 
 minetest.register_chatcommand("spawnremove", {
-	param = "",
+	params = "<spawn number|spawnid>",
 	privs = {spawn_admin=true},
 	description = "Allows to remove spawn.",
 	func = function(name, param)
