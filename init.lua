@@ -1,7 +1,6 @@
-miltispawndebug = false
+multispawndebug = false
 
 local function save_data(sett, data, def_sp)
-
 	if sett ~= nil then
 		data_ser = minetest.serialize(data)
 		sett:set("data", data_ser)
@@ -10,7 +9,6 @@ local function save_data(sett, data, def_sp)
 	else
 		minetest.chat_send_all("Saving data failed")
 	end
-
 end
 
 local function build_id(sp)
@@ -46,9 +44,8 @@ local function load_data(sett, field)
 		}
 		local def = "origin"
 	end
--- 	table.foreach(data, print)
-	local return_table = {}
 
+	local return_table = {}
 	table.insert(return_table, {spawns=data, default=def})
 	return return_table
 end
@@ -73,7 +70,7 @@ local function get_nearest_id (playerref, spawnlist)
 end
 
 local function print_r(tab,com)
-	if miltispawndebug == true then
+	if multispawndebug == true then
 		print("DEBUG: "..com)
 		table.foreach(tab, print)
 		print("-----")
@@ -84,7 +81,7 @@ local function print_r(tab,com)
 end
 
 local function debug(var, com)
-	if miltispawndebug == true then
+	if multispawndebug == true then
 		print("DEBUG: "..com)
 		print(var)
 		minetest.chat_send_all("DEBUG: "..var.."// "..com)
@@ -157,7 +154,6 @@ minetest.register_chatcommand("spawn", {
 	end,
 })
 
-
 minetest.register_chatcommand("spawnset", {
 	params = "",
 	privs = {spawn_admin=true},
@@ -202,7 +198,6 @@ minetest.register_chatcommand("spawnset", {
 					end
 				end
 
--- 				table.foreach(spawns[sid], print)
 				if err ~= "" then
 					minetest.chat_send_player(name, err);
 					local formspec = "size[8,6]"
@@ -216,8 +211,8 @@ minetest.register_chatcommand("spawnset", {
 					formspec = formspec.."label[0,8;"..err.."]"
 					formspec = formspec.."button_exit[0,5;8,1;ssubmit;Create spawn]"
 					minetest.show_formspec(name, "multispawn:spawnset", formspec)
-
 				end
+
 				local joined_data = {}
 				local new_coords = {}
 				joined_data.name = sname
@@ -230,7 +225,6 @@ minetest.register_chatcommand("spawnset", {
 				save_data(config, spawns, default_spawn.id)
 				minetest.chat_send_player(name, "Spawn point "..joined_data.name.." was succesfully created.");
 				spawn_id = rebuild_id(spawns, spawn_id)
-
 				return true
 			else
 				-- esc or enter pressed
@@ -275,7 +269,6 @@ minetest.register_chatcommand("spawnedit", {
 		formspec = formspec.."field[2.2,3;1,1;scoordz;Z coord;"..tonumber(editedspawn.coords.z).."]"
 		formspec = formspec.."label[0,8;]"
 		formspec = formspec.."button_exit[0,5;8,1;ssubmit;Confirm changes]"
-
 		minetest.show_formspec(name, "multispawn:spawnedit", formspec)
 
 		minetest.register_on_player_receive_fields(function(player, formname, fields)
@@ -297,7 +290,6 @@ minetest.register_chatcommand("spawnedit", {
 					end
 				end
 
--- 				table.foreach(spawns[sid], print)
 				if err ~= "" then
 					minetest.chat_send_player(name, err);
 					local formspec = "size[8,6]"
@@ -449,15 +441,13 @@ minetest.register_chatcommand("spawnremove", {
 	end
 })
 
-
 minetest.register_on_newplayer(function(player)
-    player:setpos(default_spawn.coords)
-    return true
+	player:setpos(default_spawn.coords)
+	return true
 end)
 
-
 minetest.register_on_respawnplayer(function(player, pos)
-    player:setpos(default_spawn.coords)
-    return true
+	player:setpos(default_spawn.coords)
+	return true
 end)
 
