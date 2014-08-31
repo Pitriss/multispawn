@@ -32,6 +32,6 @@ Spawns you to nearest/specified spawn
 List all available spawns
 
 Credits:
-Thanks to fairiestoy and Ritchie for suggestions, advices and testing, lathan for language fixes and sending patches.
+Thanks to fairiestoy and Ritchie for suggestions, advice and testing, lathan for language fixes and sending patches.
 
 Licence: WTFPL
